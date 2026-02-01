@@ -1,0 +1,69 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Renault Dashboard NPS</title>
+  <link rel="shortcut icon" type="image/png" href="{% static 'images/logos/favicon.png' %}" />
+  <link rel="stylesheet" href="{% static 'css/styles.min.css' %}" />
+</head>
+
+<body>
+  <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
+    data-sidebar-position="fixed" data-header-position="fixed">
+    
+    <aside class="left-sidebar">
+      <div>
+        <div class="brand-logo d-flex align-items-center justify-content-between">
+          <a href="/" class="text-nowrap logo-img">
+            <img src="{% static 'images/renault.png' %}" width="180" alt="Renault" />
+          </a>
+          <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+            <i class="ti ti-x fs-8"></i>
+          </div>
+        </div>
+        <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
+          <ul id="sidebarnav">
+            <li class="nav-small-cap">
+              <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
+              <span class="hide-menu">Home</span>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="/" aria-expanded="false">
+                <span>
+                  <i class="ti ti-layout-dashboard"></i>
+                </span>
+                <span class="hide-menu">Dashboard</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </aside>
+    <div class="body-wrapper">
+      
+      <header class="app-header" style="background: transparent; box-shadow: none; border-bottom: none;">
+        <nav class="navbar navbar-expand-lg navbar-light">
+          <ul class="navbar-nav">
+            <li class="nav-item d-block d-xl-none">
+              <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
+                <i class="ti ti-menu-2"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+      <div class="container-fluid">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+  
+  <script src="{% static 'libs/jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'js/sidebarmenu.js' %}"></script>
+  <script src="{% static 'js/app.min.js' %}"></script>
+</body>
+</html>
