@@ -1,18 +1,19 @@
 $(function () {
-
-
   // =====================================
-  // Profit
+  // 1. Evolução do NPS Index (Antigo "Profit")
   // =====================================
-  var chart = {
+  var options_evolution = {
     series: [
-      { name: "Earnings this month:", data: [355, 390, 300, 350, 390, 180, 355, 390] },
-      { name: "Expense this month:", data: [280, 250, 325, 215, 250, 310, 280, 250] },
+      { 
+        name: "NPS Index:", 
+        // Aqui usamos o nome que vem do Python/HTML
+        data: chartScores 
+      },
     ],
 
     chart: {
-      type: "bar",
-      height: 335,
+      type: "line",
+      height: 345,
       offsetX: -15,
       toolbar: { show: false },
       foreColor: "#adb0bb",
@@ -20,102 +21,70 @@ $(function () {
       sparkline: { enabled: false },
     },
 
+    colors: ["#5D87FF"],
 
-    colors: ["#5D87FF", "#49BEFF"],
-
-
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "35%",
-        borderRadius: [6],
-        borderRadiusApplication: 'end',
-        borderRadiusWhenStacked: 'all'
-      },
-    },
-    markers: { size: 0 },
-
-    dataLabels: {
-      enabled: false,
+    stroke: {
+      curve: "smooth",
+      width: 3,
     },
 
-
-    legend: {
-      show: false,
+    markers: {
+      size: 5,
+      colors: ["#5D87FF"],
+      strokeColors: "#fff",
+      strokeWidth: 2,
     },
-
 
     grid: {
       borderColor: "rgba(0,0,0,0.1)",
       strokeDashArray: 3,
       xaxis: {
-        lines: {
-          show: false,
-        },
+        lines: { show: false },
       },
     },
 
     xaxis: {
       type: "category",
-      categories: ["16/08", "17/08", "18/08", "19/08", "20/08", "21/08", "22/08", "23/08"],
+      // Aqui usamos as datas que vêm do Python/HTML
+      categories: chartDates,
       labels: {
         style: { cssClass: "grey--text lighten-2--text fill-color" },
       },
     },
 
-
     yaxis: {
       show: true,
-      min: 0,
-      max: 400,
+      min: -100,
+      max: 100,
       tickAmount: 4,
       labels: {
+        formatter: function (value) {
+          return value.toFixed(1);
+        },
         style: {
           cssClass: "grey--text lighten-2--text fill-color",
         },
       },
     },
-    stroke: {
-      show: true,
-      width: 3,
-      lineCap: "butt",
-      colors: ["transparent"],
-    },
-
 
     tooltip: { theme: "light" },
-
-    responsive: [
-      {
-        breakpoint: 600,
-        options: {
-          plotOptions: {
-            bar: {
-              borderRadius: 3,
-            }
-          },
-        }
-      }
-    ]
-
-
   };
 
-  var chart = new ApexCharts(document.querySelector("#chart"), chart);
-  chart.render();
+  // Renderiza no ID #chart (que era o gráfico de barras geral)
+  var chart_evo = new ApexCharts(document.querySelector("#chart"), options_evolution);
+  chart_evo.render();
 
 
   // =====================================
-  // Breakup
+  // 2. Distribuição de Notas (Antigo "Breakup")
   // =====================================
-  var breakup = {
-    color: "#adb5bd",
-    series: [38, 40, 25],
-    labels: ["2022", "2021", "2020"],
+  var options_dist = {
+    series: chartDistValues, // Usa os valores 1, 2, 3, 4, 5 do Python
+    labels: ["Nota 1", "Nota 2", "Nota 3", "Nota 4", "Nota 5"],
     chart: {
-      height: 125,
+      height: 180,
       type: "donut",
-      fontFamily: "Plus Jakarta Sans', sans-serif",
+      fontFamily: "'Plus Jakarta Sans', sans-serif",
       foreColor: "#adb0bb",
     },
     plotOptions: {
@@ -127,85 +96,41 @@ $(function () {
         },
       },
     },
-    stroke: {
-      show: false,
-    },
-
-    dataLabels: {
-      enabled: false,
-    },
-
-    legend: {
-      show: false,
-    },
-    colors: ["#5D87FF", "#ecf2ff", "#F9F9FD"],
-
-    responsive: [
-      {
-        breakpoint: 991,
-        options: {
-          chart: {
-            width: 150,
-          },
-        },
-      },
-    ],
-    tooltip: {
-      theme: "dark",
-      fillSeriesColor: false,
-    },
+    stroke: { show: false },
+    dataLabels: { enabled: false },
+    legend: { show: false },
+    colors: ["#FA896B", "#FFAE1F", "#F9F9FD", "#ecf2ff", "#5D87FF"],
+    tooltip: { theme: "dark", fillSeriesColor: false },
   };
 
-  var chart = new ApexCharts(document.querySelector("#breakup"), breakup);
-  chart.render();
-
-
+  var chart_dist = new ApexCharts(document.querySelector("#breakup"), options_dist);
+  chart_dist.render();
 
   // =====================================
-  // Earning
+  // 3. Earning (Mantido como Sparkline de exemplo)
   // =====================================
   var earning = {
     chart: {
       id: "sparkline3",
       type: "area",
       height: 60,
-      sparkline: {
-        enabled: true,
-      },
+      sparkline: { enabled: true },
       group: "sparklines",
-      fontFamily: "Plus Jakarta Sans', sans-serif",
+      fontFamily: "'Plus Jakarta Sans', sans-serif",
       foreColor: "#adb0bb",
     },
     series: [
-      {
-        name: "Earnings",
-        color: "#49BEFF",
-        data: [25, 66, 20, 40, 12, 58, 20],
-      },
+      { name: "Earnings", color: "#49BEFF", data: [25, 66, 20, 40, 12, 58, 20] },
     ],
-    stroke: {
-      curve: "smooth",
-      width: 2,
-    },
-    fill: {
-      colors: ["#f3feff"],
-      type: "solid",
-      opacity: 0.05,
-    },
-
-    markers: {
-      size: 0,
-    },
+    stroke: { curve: "smooth", width: 2 },
+    fill: { colors: ["#f3feff"], type: "solid", opacity: 0.05 },
+    markers: { size: 0 },
     tooltip: {
       theme: "dark",
-      fixed: {
-        enabled: true,
-        position: "right",
-      },
-      x: {
-        show: false,
-      },
+      fixed: { enabled: true, position: "right" },
+      x: { show: false },
     },
   };
   new ApexCharts(document.querySelector("#earning"), earning).render();
-})
+
+}); // Fim do $(function)

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h3 class="fw-bold mb-0 text-dark">Lupa de Detalhamento</h3>
+        <p class="text-muted mb-0">Análise das pesquisas por dia específico</p>
+    </div>
+    <div class="col-md-6">
+        <form method="GET" class="d-flex justify-content-end">
+            <input type="hidden" name="source" value="{{ current_source }}">
+            <div class="input-group shadow-sm" style="max-width: 250px;">
+                <span class="input-group-text bg-white border-end-0"><i class="ti ti-calendar"></i></span>
+                <input type="date" name="date" value="{{ selected_date }}" class="form-control border-start-0" onchange="this.form.submit()">
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4 overflow-hidden">
+    <div class="row g-0">
+        <div class="col-md-6 border-end p-5 text-center bg-white">
+            <h6 class="text-muted fw-bold text-uppercase small mb-3">NPS do Dia Selecionado</h6>
+            <h1 class="display-3 fw-bold {% if nps_dia_index >= 90 %}text-success{% else %}text-danger{% endif %}">
+                {{ nps_dia_index }}
+            </h1>
+            <p class="mb-0 text-muted">{{ total_dia }} pesquisas recebidas nesta data</p>
+        </div>
+        <div class="col-md-6 p-5 text-center" style="background-color: #fbfbfb;">
+            <h6 class="text-muted fw-bold text-uppercase small mb-3">Média do Mês Atual (MTD)</h6>
+            <h1 class="display-3 fw-bold text-dark">{{ nps_mes_index }}</h1>
+            <p class="mb-0 text-muted">Base de {{ total_mes }} pesquisas acumuladas</p>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 border-0">
+        <h5 class="fw-bold mb-0">Registros do Dia</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr class="small text-muted text-uppercase">
+                    <th>Cliente / Loja</th>
+                    <th>Modelo</th>
+                    <th class="text-center">Geral</th>
+                    <th class="text-center">Consultor</th>
+                    <th>Comentário</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pesquisas_dia %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ p.customer_name }}</div>
+                        <div class="text-muted small">{{ p.location_name }}</div>
+                    </td>
+                    <td><span class="badge bg-light text-dark border">{{ p.model }}</span></td>
+                    <td class="text-center">
+                        <div class="badge {% if p.score_general == 5 %}bg-success{% elif p.score_general == 4 %}bg-warning{% else %}bg-danger{% endif %} p-2 rounded-circle">
+                            {{ p.score_general }}
+                        </div>
+                    </td>
+                    <td class="text-center fw-bold">{{ p.score_consultant }}</td>
+                    <td class="text-muted small" style="max-width: 400px; white-space: normal;">
+                        "{{ p.comment|default:'Cliente não deixou comentário.' }}"
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="ti ti-ghost display-4 text-light d-block mb-3"></i>
+                        Nenhuma pesquisa encontrada para esta data.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

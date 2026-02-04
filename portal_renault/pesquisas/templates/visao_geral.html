@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-black text-white shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-warning text-uppercase small fw-bold">NPS Index Renault</h6>
+                <h2 class="display-6 fw-bold text-white mb-2">{{ nps_index }}%</h2>
+                <div class="progress mt-3" style="height: 6px; background: rgba(255,255,255,0.2);">
+                    <div class="progress-bar bg-warning" style="width: {{ nps_index }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted small fw-bold">SATISFAÇÃO GERAL</h6>
+                <h3 class="fw-bold mb-0 text-dark">{{ stats_geral.nps }}</h3>
+                <small class="text-success">{{ stats_geral.total }} pesquisas</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted small fw-bold">QUALIDADE ENTREGA</h6>
+                <h3 class="fw-bold mb-0 text-dark">{{ stats_delivery.nps }}</h3>
+                <small class="text-muted">Média: {{ stats_delivery.media }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted small fw-bold">ATEND. CONSULTOR</h6>
+                <h3 class="fw-bold mb-0 text-dark">{{ stats_consultant.nps }}</h3>
+                <small class="text-muted">Promotores: {{ stats_consultant.p_pct }}%</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-3">
+                <h5 class="fw-bold"><i class="ti ti-chart-line me-2 text-primary"></i>Evolução Mensal NPS Index</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="chartTrend"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-3">
+                <h5 class="fw-bold">Distribuição Geral</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="chartDist"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-3">
+                <h5 class="fw-bold text-success"><i class="ti ti-award me-2"></i>Top 5 Melhores Lojas</h5>
+            </div>
+            <div class="table-responsive p-3">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr class="text-muted small">
+                            <th>LOJA</th>
+                            <th class="text-center">NPS</th>
+                            <th class="text-center">PESQUISAS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loja in top_lojas %}
+                        <tr>
+                            <td class="fw-bold">{{ loja.nome_exibicao }}</td>
+                            <td class="text-center"><span class="badge bg-success-subtle text-success px-3">{{ loja.media|floatformat:1 }}</span></td>
+                            <td class="text-center small text-muted">{{ loja.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 pt-3">
+                <h5 class="fw-bold text-danger"><i class="ti ti-alert-circle me-2"></i>Ranking de Oportunidade</h5>
+            </div>
+            <div class="table-responsive p-3">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr class="text-muted small">
+                            <th>LOJA</th>
+                            <th class="text-center">NPS</th>
+                            <th class="text-center">PESQUISAS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loja in bottom_lojas %}
+                        <tr>
+                            <td class="fw-bold">{{ loja.nome_exibicao }}</td>
+                            <td class="text-center"><span class="badge bg-danger-subtle text-danger px-3">{{ loja.media|floatformat:1 }}</span></td>
+                            <td class="text-center small text-muted">{{ loja.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctxTrend = document.getElementById('chartTrend').getContext('2d');
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: {{ chart_dates|safe }},
+            datasets: [
+                {
+                    label: 'NPS Index',
+                    data: {{ chart_scores|safe }},
+                    borderColor: '#000',
+                    backgroundColor: 'rgba(0,0,0,0.05)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#FFCC00'
+                },
+                {
+                    label: 'Meta (90%)',
+                    data: Array({{ chart_dates|safe }}.length).fill(90),
+                    borderColor: '#FFCC00',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { min: 0, max: 100 } }
+        }
+    });
+
+    const ctxDist = document.getElementById('chartDist').getContext('2d');
+    new Chart(ctxDist, {
+        type: 'doughnut',
+        data: {
+            labels: ['1★', '2★', '3★', '4★', '5★'],
+            datasets: [{
+                data: {{ chart_dist_values|safe }},
+                backgroundColor: ['#e74c3c', '#e67e22', '#f1c40f', '#3498db', '#2ecc71']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+    });
+</script>
+
+{% endblock %}
