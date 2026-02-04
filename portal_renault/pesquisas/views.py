@@ -35,7 +35,7 @@ def visao_geral(request):
     current_source = request.GET.get('source', 'Sales')
     hoje = datetime.date.today()
     
-    # --- DEFINIÇÃO DO QS (Resolve o NameError) ---
+    # --- DEFINIÇÃO DO QS ---
     qs = SurveyResponse.objects.filter(
         source=current_source, 
         date__lte=hoje
@@ -49,25 +49,34 @@ def visao_geral(request):
     # Cálculo Ponderado Renault (50% Geral, 25% Entrega, 25% Consultor)
     nps_index_total = (0.5 * stats_geral['nps']) + (0.25 * stats_delivery['nps']) + (0.25 * stats_consultant['nps'])
 
-    # 2. Agrupamento para o Ranking (Resolve o FieldError)
+    # 2. Agrupamento para o Ranking
     lojas_stats = qs.values('location_name').annotate(
         media=Avg('score_general'),
         total=Count('id')
     ).filter(total__gte=1)
 
     # 3. Lógica do PROCX (Excel: Coluna D -> Retorna Coluna F)
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    caminho_excel = os.path.join(base_dir, 'Lista de E-mails da Rede.xlsx')
+    # Correção do Caminho: Sobe 2 níveis para chegar na raiz e entra em 'data'
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    caminho_excel = os.path.join(base_dir, 'data', 'Lista de E-mails da Rede.xlsx')
     
     ranking_final = []
     try:
+        # Verifica se o arquivo existe antes de tentar ler
+        if not os.path.exists(caminho_excel):
+            raise FileNotFoundError(f"Arquivo não encontrado em: {caminho_excel}")
+
         # 1. Carrega a planilha (D=3, F=5)
-        df_rede = pd.read_excel(caminho_excel, sheet_name='Lista de Concessionárias', usecols=[3, 5])
+        # header=2 faz pular as 2 primeiras linhas (cabeçalho falso)
+        df_rede = pd.read_excel(
+            caminho_excel, 
+            sheet_name='Lista de Concessionárias', 
+            header=2,      
+            usecols=[3, 5] 
+        )
         df_rede.columns = ['id_planilha', 'nome_oficial']
         
         # 2. Padronização Crítica:
-        # Convertemos para string, removemos espaços e garantimos que 
-        # o Python não se perca com números decimais (.0) que o Excel às vezes cria
         df_rede['id_planilha'] = df_rede['id_planilha'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
         
         df_ranking = pd.DataFrame(list(lojas_stats))
@@ -92,7 +101,8 @@ def visao_geral(request):
             ranking_final = df_final.sort_values(by='media', ascending=False).to_dict('records')
             
     except Exception as e:
-        print(f"Erro Crítico no PROCX: {e}")
+        print(f"Erro Crítico no PROCX (Excel): {e}")
+        # Fallback total caso o Excel falhe
         ranking_final = list(lojas_stats.order_by('-media'))
 
     # 4. Dados para o Gráfico de Evolução (Linha)
